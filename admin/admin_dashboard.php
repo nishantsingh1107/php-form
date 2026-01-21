@@ -17,13 +17,15 @@
     $recentUsers = $pdo->query("SELECT id, name, email, role, status FROM users WHERE role = 'user' ORDER BY id DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
     $recentVerified = [];
-    try {
-        $recentVerified = $pdo->query("SELECT id, name, email FROM users WHERE  role = 'user' AND email_verified = 1 ORDER BY id DESC LIMIT 5")
-            ->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Throwable $e) {
-        $recentVerified = [];
+    try{
+        $recentVerified = $pdo->query("SELECT id, name, email, role, email_verified_time FROM users WHERE role = 'user' AND email_verified = 1 ORDER BY email_verified_time DESC, id DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+    }catch(Throwable $e){
+        try{
+            $recentVerified = $pdo->query("SELECT id, name, email, role FROM users WHERE role = 'user' AND email_verified = 1 ORDER BY id DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+        }catch (Throwable $e2){
+            $recentVerified = [];
+        }
     }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -164,6 +166,8 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Verified At</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -171,9 +175,20 @@
                                         <tr>
                                             <td><?= htmlspecialchars($v['name']) ?></td>
                                             <td><?= htmlspecialchars($v['email']) ?></td>
+                                            <td><?= htmlspecialchars(ucfirst((string)$v['role'])) ?></td>
+                                            <td>
+                                                <?php
+                                                    if(!empty($v['email_verified_time'])){
+                                                        $dt = new DateTime($v['email_verified_time'], new DateTimeZone('UTC'));
+                                                        echo htmlspecialchars($dt->format('d-m-Y H:i'));
+                                                    }else{
+                                                        echo '-';
+                                                    }
+                                                ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; else: ?>
-                                        <tr><td colspan="2" class="text-center text-muted">No verified emails found</td></tr>
+                                        <tr><td colspan="4" class="text-center text-muted">No verified emails found</td></tr>
                                     <?php endif; ?>
                                     </tbody>
                                 </table>

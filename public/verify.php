@@ -10,8 +10,13 @@
 
         $user = $stmt->fetch();
         if($user){
-            $stmt = $pdo->prepare("UPDATE users SET status='active', email_verified = 1, verify_token = NULL, must_change_password = 1 WHERE id = :id");
-            $stmt->execute([":id" => $user['id']]);
+            try{
+                $stmt = $pdo->prepare("UPDATE users SET status='active', email_verified = 1, email_verified_time=UTC_TIMESTAMP(), verify_token = NULL, must_change_password = 1 WHERE id = :id");
+                $stmt->execute([":id" => $user['id']]);
+            }catch(Throwable $e){
+                $stmt = $pdo->prepare("UPDATE users SET status='active', email_verified = 1, verify_token = NULL, must_change_password = 1 WHERE id = :id");
+                $stmt->execute([":id" => $user['id']]);
+            }
             $verified = true;
             $userId = $user['id'];
 

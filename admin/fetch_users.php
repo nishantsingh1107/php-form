@@ -49,7 +49,7 @@
         $status = '<span class="badge '.($u['status']=='active'?'bg-success':'bg-danger').'">'.ucfirst($u['status']).'</span>';
         $actions = '
             <a href="user_edit.php?id='.$u['id'].'" class="btn btn-sm btn-warning">Edit</a>
-            <a href="user_delete.php?id='.$u['id'].'" class="btn btn-sm btn-danger" onclick="return confirm(\'Delete?\')">Delete</a>
+            <a href="user_delete.php?id='.$u['id'].'" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure you want to delete the user?\')">Delete</a>
         ';
 
         $data[] = [

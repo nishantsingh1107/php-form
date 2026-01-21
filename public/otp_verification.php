@@ -50,9 +50,13 @@
                 $otpHash = (string)($user['otp_code'] ?? '');
                 if(!$otpHash || !password_verify($otpIn, $otpHash)){
                     $error = "Invalid OTP";
-                } else {
-                    $pdo->prepare("UPDATE users SET status='active', email_verified=1, otp_code=NULL, otp_expires_at=NULL WHERE id=:id")
-                        ->execute(['id'=>$uid]);
+                } 
+                else{
+                    try{
+                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, email_verified_time=UTC_TIMESTAMP(), otp_code=NULL, otp_expires_at=NULL WHERE id=:id")->execute(['id'=>$uid]);
+                    }catch(Throwable $e){
+                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, otp_code=NULL, otp_expires_at=NULL WHERE id=:id")->execute(['id'=>$uid]);
+                    }
                     $success = "Email verified successfully. You can login now.";
                 }
             }
