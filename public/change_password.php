@@ -75,10 +75,21 @@
 </head>
 <body class="bg-light">
 
-    <div class="container mt-5" style="max-width: 420px;">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-            <h5 class="text-center mb-3 fw-semibold">Change Password</h5>
+<?php include 'partials/navbar.php'; ?>
+
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <?php if ($userRole !== 'admin'): ?>
+                <?php include 'partials/sidebar.php'; ?>
+                <div class="col-md-10 p-4">
+            <?php else: ?>
+                <div class="col-12 p-4">
+            <?php endif; ?>
+
+                <div class="container mt-3" style="max-width: 420px;">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                        <h5 class="text-center mb-3 fw-semibold">Change Password</h5>
 
                 <?php if ($error): ?>
                 <div class="alert alert-danger"><?= $error ?></div>
@@ -131,9 +142,13 @@
                     <button class="btn btn-primary w-100">Update Password</button>
                 </form>
                 
-                <div class="text-center mt-3">
-                    <a href="<?= ($userRole === 'admin') ? '../admin/admin_profile.php' : 'user_dashboard.php' ?>" class='btn btn-primary w-100'>Back</a>
+                            <div class="text-center mt-3">
+                                <a href="<?= ($userRole === 'admin') ? '../admin/admin_profile.php' : 'user_profile.php' ?>" class='btn btn-primary w-100'>Back</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>

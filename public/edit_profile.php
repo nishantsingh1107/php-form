@@ -41,6 +41,8 @@
 </head>
 <body class="bg-light">
 
+<?php include 'partials/navbar.php'; ?>
+
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-4">
@@ -86,7 +88,7 @@
                         <button type="submit" class="btn btn-success w-100">Update Profile</button>
                     </form>
                     <div class="text-center mt-3">
-                        <a href="user_dashboard.php" class='btn btn-primary w-100'>Back to Dashboard</a>
+                        <a href="user_profile.php" class='btn btn-primary w-100'>Back to Dashboard</a>
                     </div>
                 </div>
             </div>
