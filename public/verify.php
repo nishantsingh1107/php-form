@@ -37,19 +37,19 @@
 <body class="bg-light d-flex align-items-center justify-content-center vh-100">
 
 <div class="card shadow-sm p-4 text-center" style="max-width:420px;">
-<?php if ($verified): ?>
-    <h4 class="text-success">Email Verified Successfully</h4>
-    <p class="mt-2">
-        Your account has been verified.<br>
-        Please change the default password to continue.
-    </p>
-    <a href="change_password.php?id=<?= $userId ?>" class="btn btn-primary mt-3">
-        Change Password
-    </a>
-<?php else: ?>
-    <h4 class="text-danger">Verification Failed</h4>
-    <p>The verification link is invalid or expired.</p>
-<?php endif; ?>
+    <?php if ($verified): ?>
+        <h4 class="text-success">Email Verified Successfully</h4>
+        <p class="mt-2">
+            Your account has been verified.<br>
+            Please change the default password to continue.
+        </p>
+        <a href="change_password.php?id=<?= $userId ?>" class="btn btn-primary mt-3">
+            Change Password
+        </a>
+    <?php else: ?>
+        <h4 class="text-danger">Verification Failed</h4>
+        <p>The verification link is invalid or expired.</p>
+    <?php endif; ?>
 </div>
 </body>
 </html>
