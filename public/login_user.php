@@ -39,14 +39,16 @@
                 else{
                     $status = (string)($user['status'] ?? '');
                     $emailVerified = (int)($user['email_verified'] ?? 0);
+                    $mustChangePassword = (int)($user['must_change_password'] ?? 0);
 
-                    if ($status === 'inactive' && $emailVerified === 0) {
+                    if ($status === 'inactive' && $emailVerified === 0 && $mustChangePassword === 0) {
                         $uid = (int)$user['id'];
                         $otpPlain = (string)random_int(100000, 999999);
                         $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
+                        $otpToken = bin2hex(random_bytes(32));
+                        $otpTokenStored = 'otp:' . hash('sha256', $otpToken);
 
-                        $pdo->prepare("UPDATE users SET otp_code=:otp, otp_expires_at=DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE) WHERE id=:id")
-                            ->execute(['otp'=>$otpHash,'id'=>$uid]);
+                        $pdo->prepare("UPDATE users SET otp_code=:otp, otp_expires_at=DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), verify_token=:token WHERE id=:id")->execute(['otp'=>$otpHash,'token'=>$otpTokenStored,'id'=>$uid]);
 
                         $smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?: 'smtp.gmail.com';
                         $smtpPort = (int)($_ENV['SMTP_PORT'] ?? getenv('SMTP_PORT') ?: 587);
@@ -77,12 +79,15 @@
                                 $mail->send();
 
                                 $_SESSION['otp_notice'] = "Your account is not verified. Please verify first. A new OTP has been sent.";
-                                header("Location: otp_verification.php?uid=" . $uid);
+                                header("Location: otp_verification.php?token=" . urlencode($otpToken));
                                 exit;
                             } catch (Throwable $e) {
                                 $loginErr = "Your account is not verified. Email server not responding. Please try again.";
                             }
                         }
+                    }
+                    elseif ($status === 'inactive' && $emailVerified === 0 && $mustChangePassword === 1) {
+                        $loginErr = "Your account is not verified. Please use the verification link sent to your email.";
                     }
                     elseif ($status === 'inactive' && $emailVerified === 1) {
                         $loginErr = "Your account is disabled by admin. Please contact the admin.";

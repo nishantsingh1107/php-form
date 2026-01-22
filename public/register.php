@@ -91,13 +91,16 @@
             $passwordHash = password_hash($pass, PASSWORD_DEFAULT);
             $otpPlain = (string)random_int(100000,999999);
             $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
+            $otpToken = bin2hex(random_bytes(32));
+            $otpTokenStored = 'otp:' . hash('sha256', $otpToken);
 
-            $pdo->prepare("INSERT INTO users(name,email,mobile,password,status,role,email_verified,verify_token,must_change_password,otp_code,otp_expires_at) VALUES(:name,:email,:mobile,:password,'inactive','user',0,NULL,0,:otp,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE))")
+            $pdo->prepare("INSERT INTO users(name,email,mobile,password,status,role,email_verified,verify_token,must_change_password,otp_code,otp_expires_at) VALUES(:name,:email,:mobile,:password,'inactive','user',0,:token,0,:otp,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE))")
                 ->execute([
                     'name'=>$name,
                     'email'=>$email,
                     'mobile'=>$mobile,
                     'password'=>$passwordHash,
+                    'token'=>$otpTokenStored,
                     'otp'=>$otpHash
                 ]);
             $userId = (int)$pdo->lastInsertId();
@@ -139,7 +142,7 @@
                     $mail->Body = "Your OTP is " . $otpPlain . " valid for 5 minutes";
 
                     $mail->send();
-                    header("Location: otp_verification.php?uid=" . $userId);
+                    header("Location: otp_verification.php?token=" . urlencode($otpToken));
                     exit;
                 } catch (Throwable $e) {
                     $mailErr = "Email server not responding. Please try again.";

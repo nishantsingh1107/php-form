@@ -4,25 +4,28 @@
     require_once "../config/db.php";
     require '../vendor/autoload.php';
 
-    $uid = isset($_GET['uid']) ? (int)$_GET['uid'] : 0;
-    if($uid <= 0){
+    $token = trim((string)($_GET['token'] ?? ''));
+    if($token === ''){
         header("Location: register.php");
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT id, email, status, email_verified FROM users WHERE id=:id LIMIT 1");
-    $stmt->execute(['id'=>$uid]);
+    $tokenStored = 'otp:' . hash('sha256', $token);
+
+    $stmt = $pdo->prepare("SELECT id, email, status, email_verified, must_change_password FROM users WHERE verify_token=:token LIMIT 1");
+    $stmt->execute(['token'=>$tokenStored]);
     $user = $stmt->fetch();
-    if(!$user || (string)$user['status'] !== 'inactive' || (int)$user['email_verified'] !== 0){
+    if(!$user || (string)$user['status'] !== 'inactive' || (int)$user['email_verified'] !== 0 || (int)($user['must_change_password'] ?? 0) !== 0){
         header("Location: register.php");
         exit;
     }
+
+    $uid = (int)$user['id'];
 
     $otpPlain = (string)random_int(100000,999999);
     $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
-
-    $pdo->prepare("UPDATE users SET otp_code=:otp, otp_expires_at=DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE) WHERE id=:id")
-        ->execute(['otp'=>$otpHash,'id'=>$uid]);
+    $newToken = bin2hex(random_bytes(32));
+    $newTokenStored = 'otp:' . hash('sha256', $newToken);
 
     $email = (string)$user['email'];
 
@@ -56,7 +59,9 @@
             $mail->Body = "Your new OTP is " . $otpPlain . " (valid for 5 minutes)";
             $mail->send();
 
-            header("Location: otp_verification.php?uid=".$uid);
+            $pdo->prepare("UPDATE users SET otp_code=:otp, otp_expires_at=DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), verify_token=:newToken WHERE id=:id")->execute(['otp'=>$otpHash,'newToken'=>$newTokenStored,'id'=>$uid]);
+
+            header("Location: otp_verification.php?token=" . urlencode($newToken));
             exit;
         } catch (Throwable $e) {
             $error = "Email server not responding. Please try again.";
@@ -78,7 +83,7 @@
                 <?= htmlspecialchars($error) ?>
             </div>
             <div>
-                <a class="btn btn-outline-primary" href="otp_verification.php?uid=<?= (int)$uid ?>">Back to OTP</a>
+                <a class="btn btn-outline-primary" href="otp_verification.php?token=<?= htmlspecialchars(urlencode($token)) ?>">Back to OTP</a>
             </div>
         </div>
     </div>

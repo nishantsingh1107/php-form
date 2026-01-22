@@ -5,7 +5,7 @@
     $token = $_GET['token'] ?? "";
     $verified = false;
     if($token){
-        $stmt = $pdo->prepare("SELECT id, role FROM users WHERE verify_token = :token AND email_verified = 0");
+        $stmt = $pdo->prepare("SELECT id, role FROM users WHERE verify_token = :token AND email_verified = 0 AND must_change_password = 1");
         $stmt->execute([":token" => $token]);
 
         $user = $stmt->fetch();

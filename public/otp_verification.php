@@ -2,20 +2,27 @@
     session_start();
     require_once "../config/db.php";
 
-    $uid = isset($_GET['uid']) ? (int)$_GET['uid'] : 0;
-    if($uid <= 0){
+    $token = trim((string)($_GET['token'] ?? ''));
+    if($token === ''){
         header("Location: register.php");
         exit;
     }
 
+    $tokenStored = 'otp:' . hash('sha256', $token);
+
     $userStmt = $pdo->prepare(
-        "SELECT id, email, status, email_verified, otp_code, otp_expires_at, "
+        "SELECT id, email, status, email_verified, must_change_password, otp_code, otp_expires_at, verify_token, "
         . "(otp_expires_at IS NULL OR otp_expires_at <= UTC_TIMESTAMP()) AS otp_expired "
-        . "FROM users WHERE id=:id LIMIT 1"
+        . "FROM users WHERE verify_token=:token LIMIT 1"
     );
-    $userStmt->execute(['id'=>$uid]);
+    $userStmt->execute(['token'=>$tokenStored]);
     $user = $userStmt->fetch();
-    if(!$user || (string)$user['status'] !== 'inactive' || (int)$user['email_verified'] !== 0){
+    if(
+        !$user
+        || (string)$user['status'] !== 'inactive'
+        || (int)$user['email_verified'] !== 0
+        || (int)($user['must_change_password'] ?? 0) !== 0
+    ){
         header("Location: register.php");
         exit;
     }
@@ -33,9 +40,9 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $otpIn = trim((string)($_POST['otp'] ?? ''));
 
-        $userStmt->execute(['id'=>$uid]);
+        $userStmt->execute(['token'=>$tokenStored]);
         $user = $userStmt->fetch();
-        if(!$user || (string)$user['status'] !== 'inactive' || (int)$user['email_verified'] !== 0){
+        if(!$user || (string)$user['status'] !== 'inactive' || (int)$user['email_verified'] !== 0 || (int)($user['must_change_password'] ?? 0) !== 0){
             header("Location: register.php");
             exit;
         }
@@ -53,9 +60,9 @@
                 } 
                 else{
                     try{
-                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, email_verified_time=UTC_TIMESTAMP(), otp_code=NULL, otp_expires_at=NULL WHERE id=:id")->execute(['id'=>$uid]);
+                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, email_verified_time=UTC_TIMESTAMP(), otp_code=NULL, otp_expires_at=NULL, verify_token=NULL WHERE id=:id")->execute(['id'=>(int)$user['id']]);
                     }catch(Throwable $e){
-                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, otp_code=NULL, otp_expires_at=NULL WHERE id=:id")->execute(['id'=>$uid]);
+                        $pdo->prepare("UPDATE users SET status='active', email_verified=1, otp_code=NULL, otp_expires_at=NULL, verify_token=NULL WHERE id=:id")->execute(['id'=>(int)$user['id']]);
                     }
                     $success = "Email verified successfully. You can login now.";
                 }
@@ -102,7 +109,7 @@
                 <p class="text-muted text-center mb-3">
                     Enter the 6-digit OTP sent to your email
                 </p>
-                <form method="post" action="otp_verification.php?uid=<?= (int)$uid ?>">
+                <form method="post" action="otp_verification.php?token=<?= htmlspecialchars(urlencode($token)) ?>">
                     <div class="mb-3">
                         <label class="form-label" for="otp">OTP<span class="text-danger">*</span></label>
                         <input type="text" name="otp" id="otp" class="form-control text-center" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="Enter OTP" required <?= $success ? 'disabled' : '' ?>>
@@ -120,7 +127,7 @@
                     </div>
                 <?php endif; ?>
                 <div class="text-center mt-3">
-                    <div>Didn't recive OTP? <a href="resend_otp.php?uid=<?= (int)$uid ?>">Resend otp</a></div>
+                    <div>Didn't recive OTP? <a href="resend_otp.php?token=<?= htmlspecialchars(urlencode($token)) ?>">Resend otp</a></div>
                 </div>
             </div>
         </div>
