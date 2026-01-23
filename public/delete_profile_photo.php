@@ -14,7 +14,7 @@
 
     $userId = $_SESSION['user_id'];
 
-    $stmt = $pdo->prepare("SELECT id, file_path FROM user_files WHERE user_id = :id ORDER BY id DESC LIMIT 1"
+    $stmt = $pdo->prepare("SELECT id, file_path FROM profile_photos WHERE user_id = :id ORDER BY id DESC LIMIT 1"
     );
     $stmt->execute(['id' => $userId]);
     $file = $stmt->fetch();
@@ -32,7 +32,7 @@
             unlink($fullPath);
         }
 
-        $pdo->prepare("DELETE FROM user_files WHERE id = :id")
+        $pdo->prepare("DELETE FROM profile_photos WHERE id = :id")
             ->execute(['id' => $file['id']]);
     }
 

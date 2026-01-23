@@ -2,7 +2,7 @@
     require_once "../auth/admin_auth.php";
     require_once "../config/db.php";
     
-    $stmt = $pdo->prepare("SELECT u.name, u.email, u.role, u.status," . "(SELECT file_path FROM user_files WHERE user_id = u.id ORDER BY id DESC LIMIT 1) AS file_path" . " FROM users u WHERE u.id = :id");
+    $stmt = $pdo->prepare("SELECT u.name, u.email, u.role, u.status," . "(SELECT file_path FROM profile_photos WHERE user_id = u.id ORDER BY id DESC LIMIT 1) AS file_path" . " FROM users u WHERE u.id = :id");
     $stmt->execute([':id' => $_SESSION['user_id']]);
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 

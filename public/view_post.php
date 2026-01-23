@@ -41,6 +41,7 @@
     <title><?= htmlspecialchars($post['title']) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" rel="stylesheet"/>
     <style>
         .post-image {
             width: 800%;
@@ -59,7 +60,7 @@
     <div class="row min-vh-100">
         <?php include "partials/sidebar.php"; ?>
         <div class="col-md-10 p-4">
-            <a href="my_posts.php" class="btn btn-outline-secondary btn-sm mb-3">← Back to My Posts</a>
+            <a href="my_posts.php" class="btn btn-dark btn-sm mb-3">← Back to My Posts</a>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -69,9 +70,10 @@
                                 Created on <?= date('d M Y, h:i A', strtotime($post['created_at'])) ?>
                             </small>
                         </div>
-                        <span class="badge fs-6 <?= $post['status'] === 'public' ? 'bg-success' : 'bg-primary' ?>">
+                        <span class="badge fs-6 ms-auto <?= $post['status'] === 'public' ? 'bg-success' : 'bg-primary' ?>">
                             <?= ucfirst($post['status']) ?>
                         </span>
+                        <a class="btn btn-outline-primary btn-sm ms-2" href="edit_post.php?id=<?= (int)$postId ?>">Edit Post</a>
                     </div><hr>
                     <div class="mb-4">
                         <h6 class="text-uppercase text-muted mb-2">Description</h6>
@@ -106,5 +108,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
 </body>
 </html>

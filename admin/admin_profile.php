@@ -11,7 +11,7 @@
     $error = '';
     $success = '';
 
-    $stmtImg = $pdo->prepare("SELECT id, file_path FROM user_files WHERE user_id = :id ORDER BY id DESC LIMIT 1");
+    $stmtImg = $pdo->prepare("SELECT id, file_path FROM profile_photos WHERE user_id = :id ORDER BY id DESC LIMIT 1");
     $stmtImg->execute([':id' => $adminId]);
     $fileRow = $stmtImg->fetch(PDO::FETCH_ASSOC);
 
@@ -23,7 +23,7 @@
                 @unlink($fullPath);
             }
 
-            $pdo->prepare("DELETE FROM user_files WHERE id = :id")->execute([':id' => (int)$fileRow['id']]);
+            $pdo->prepare("DELETE FROM profile_photos WHERE id = :id")->execute([':id' => (int)$fileRow['id']]);
         }
         header("Location: admin_profile.php?success=" . urlencode('Profile photo deleted'));
         exit;
@@ -65,7 +65,7 @@
                     if (!move_uploaded_file($_FILES['profile_img']['tmp_name'], $fullPath)) {
                         $error = 'Unable to save uploaded image';
                     } else {
-                        $pdo->prepare("INSERT INTO user_files (user_id, file_name, file_path, file_type) VALUES (:uid,:fn,:fp,:ft)")
+                        $pdo->prepare("INSERT INTO profile_photos (user_id, file_name, file_path, file_type) VALUES (:uid,:fn,:fp,:ft)")
                             ->execute([':uid'=>$adminId, ':fn'=>$fileName, ':fp'=>$dbPath, ':ft'=>$ext]);
                     }
                 }

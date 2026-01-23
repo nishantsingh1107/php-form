@@ -5,7 +5,7 @@
     $id=$_GET['id']??null;
     if(!$id)die("Invalid request");
 
-    $stmt=$pdo->prepare("SELECT u.*, (SELECT file_path FROM user_files WHERE user_id=u.id ORDER BY id DESC LIMIT 1) AS file_path FROM users u WHERE u.id=:id ");
+    $stmt=$pdo->prepare("SELECT u.*, (SELECT file_path FROM profile_photos WHERE user_id=u.id ORDER BY id DESC LIMIT 1) AS file_path FROM users u WHERE u.id=:id ");
     $stmt->execute([':id'=>$id]);
     $user=$stmt->fetch(PDO::FETCH_ASSOC);
     if(!$user)die("User not found");
@@ -60,7 +60,7 @@
             ]);
             if($uploadPath){
                 $pdo->prepare("
-                    INSERT INTO user_files(user_id,file_name,file_path,file_type)
+                    INSERT INTO profile_photos(user_id,file_name,file_path,file_type)
                     VALUES(:uid,:fn,:fp,:ft)
                 ")->execute([
                     ':uid'=>$id,

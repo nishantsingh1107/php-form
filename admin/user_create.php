@@ -104,7 +104,7 @@
 
             if ($userId > 0 && $dbFilePath && $fileExt) {
                 $pdo->prepare(
-                    "INSERT INTO user_files (user_id, file_name, file_path, file_type) VALUES (:uid,:fn,:fp,:ft)"
+                    "INSERT INTO profile_photos (user_id, file_name, file_path, file_type) VALUES (:uid,:fn,:fp,:ft)"
                 )->execute([
                     ':uid' => $userId,
                     ':fn'  => basename($dbFilePath),

@@ -13,7 +13,7 @@
         $pdo->beginTransaction();
 
         // Remove related uploaded file records first (prevents FK constraint failures).
-        $pdo->prepare("DELETE FROM user_files WHERE user_id = :id")->execute([':id' => $id]);
+        $pdo->prepare("DELETE FROM profile_photos WHERE user_id = :id")->execute([':id' => $id]);
 
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
         $stmt->execute([':id' => $id]);

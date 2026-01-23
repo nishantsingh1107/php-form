@@ -14,7 +14,7 @@
     $user = $stmt->fetch();
 
     $profileImageUrl = null;
-    $stmtImg = $pdo->prepare("SELECT file_path FROM user_files WHERE user_id = :id ORDER BY id DESC LIMIT 1");
+    $stmtImg = $pdo->prepare("SELECT file_path FROM profile_photos WHERE user_id = :id ORDER BY id DESC LIMIT 1");
     $stmtImg->execute(['id' => $userId]);
     $file = $stmtImg->fetch();
     if ($file && !empty($file['file_path'])) {

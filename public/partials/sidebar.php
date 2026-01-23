@@ -4,8 +4,9 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 ?>
+<div class="d-none d-md-block col-md-2"></div>
 
-<div class="col-md-2 bg-dark text-white p-3 d-flex flex-column vh-100 overflow-auto">
+<aside class="d-none d-md-flex bg-dark text-white p-3 flex-column overflow-auto position-fixed" style="top:56px;left:0;height:calc(100vh - 56px);width:16.666667%; z-index:1020;">
     <ul class="nav flex-column">
         <li class="nav-item mb-2">
             <a href="user_dashboard.php" class="nav-link text-white">Dashboard</a>
@@ -18,4 +19,4 @@ if (!isset($_SESSION['user_id'])) {
         </li>
         <hr class="text-secondary mt-auto">
     </ul>
-</div>
+</aside>

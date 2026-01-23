@@ -6,7 +6,7 @@
     $flashError = $_SESSION['flash_error'] ?? '';
     unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
-    // $stmt = $pdo->query(" SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM user_files WHERE user_id = u.id ORDER BY id DESC LIMIT 1) AS file_path FROM users u ORDER BY u.id DESC");
+    // $stmt = $pdo->query(" SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM profile_photos WHERE user_id = u.id ORDER BY id DESC LIMIT 1) AS file_path FROM users u ORDER BY u.id DESC");
     // $users = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>

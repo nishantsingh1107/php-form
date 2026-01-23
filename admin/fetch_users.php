@@ -26,7 +26,7 @@
     $stmt->execute($params);
     $filteredRecords = $stmt->fetchColumn();
 
-    $sql = "SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM user_files WHERE user_id = u.id ORDER BY id DESC LIMIT 1) as file_path FROM users u $where ORDER BY $orderColumn $orderDir LIMIT :start, :length";
+    $sql = "SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM profile_photos WHERE user_id = u.id ORDER BY id DESC LIMIT 1) as file_path FROM users u $where ORDER BY $orderColumn $orderDir LIMIT :start, :length";
     $stmt = $pdo->prepare($sql);
 
     foreach ($params as $k => $v) {
