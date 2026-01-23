@@ -26,7 +26,7 @@
     $stmt->execute($params);
     $filteredRecords = $stmt->fetchColumn();
 
-    $sql = "SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM profile_photos WHERE user_id = u.id ORDER BY id DESC LIMIT 1) as file_path FROM users u $where ORDER BY $orderColumn $orderDir LIMIT :start, :length";
+    $sql = "SELECT u.id, u.name, u.email, u.mobile, u.status, (SELECT file_path FROM profile_photos WHERE user_id = u.id ORDER BY id DESC LIMIT 1) as file_path, (SELECT COUNT(*) FROM posts p WHERE p.user_id = u.id) AS post_count FROM users u $where ORDER BY $orderColumn $orderDir LIMIT :start, :length";
     $stmt = $pdo->prepare($sql);
 
     foreach ($params as $k => $v) {
@@ -52,14 +52,23 @@
             <a href="user_delete.php?id='.$u['id'].'" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure you want to delete the user?\')">Delete</a>
         ';
 
+        $postCount = (int)$u['post_count'];
+        if($postCount>0){
+            $viewPostsBtn = '<a href="user_posts.php?user_id='.$u['id'].'" class="btn btn-sm btn-primary"> Posts ('.$postCount.')</a>';
+        }else{
+            $viewPostsBtn = '<button class="btn btn-sm btn-secondary" disabled> Posts (0)</button>';
+        }
+
         $data[] = [
             $i++,
             $profile,
             htmlspecialchars($u['name']),
             htmlspecialchars($u['email']),
             htmlspecialchars($u['mobile']),
+            $postCount,
             $status,
-            $actions
+            $actions,
+            $viewPostsBtn
         ];
     }
 

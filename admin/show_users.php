@@ -72,8 +72,10 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Mobile</th>
+                                <th>Posts</th>
                                 <th>Status</th>
                                 <th>Actions</th>
+                                <th>View Post</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -122,7 +124,8 @@
             order: [[0, 'desc']],
             columnDefs: [
                 {searchable: false, targets:[0, 1, 6]},
-                {orderable: false, targets:[0, 1, 2, 3, 4, 5, 6]}
+                {orderable: false, targets:"_all"},
+                {"className": "dt-center", "targets":"_all"}
             ]
         });
     });
