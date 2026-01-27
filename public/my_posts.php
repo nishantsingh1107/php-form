@@ -8,11 +8,10 @@
     }
 
     $userId = (int)$_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT p.id, p.title, p.description, p.status, p.created_at, MIN(pi.file_path) AS thumbnail FROM posts p LEFT JOIN post_images pi ON pi.post_id = p.id WHERE p.user_id = :uid GROUP BY p.id ORDER BY p.created_at DESC");
+    $stmt = $pdo->prepare("SELECT p.id, p.title, p.description, p.status, p.admin_status, p.created_at, MIN(pi.file_path) AS thumbnail FROM posts p LEFT JOIN post_images pi ON pi.post_id = p.id WHERE p.user_id = :uid GROUP BY p.id ORDER BY p.created_at DESC");
     $stmt->execute([':uid' => $userId]);
 
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     $public = array_filter($posts, fn($p) => $p['status'] === 'public');
     $hidden = array_filter($posts, fn($p) => $p['status'] === 'hidden');
 
@@ -20,6 +19,9 @@
     if ($activeTab !== 'public' && $activeTab !== 'hidden') {
         $activeTab = 'public';
     }
+
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,6 +38,11 @@
     <div class="row min-vh-100">
         <?php include "partials/sidebar.php"; ?>
         <div class="col-md-10 p-4">
+            <?php if ($flash): ?>
+                <div class="alert alert-<?= htmlspecialchars($flash['type']) ?> mb-3">
+                    <?= htmlspecialchars($flash['message']) ?>
+                </div>
+            <?php endif; ?>
             <h4 class="mb-4">My Posts</h4>
             <ul class="nav nav-tabs mb-4" id="postTabs" role="tablist">
                 <li class="nav-item">

@@ -32,7 +32,7 @@
         $currentStatus = (string)($post['status'] ?? 'public');
         $newStatus = ($currentStatus === 'public') ? 'hidden' : 'public';
 
-        $update = $pdo->prepare("UPDATE posts SET status = :status WHERE id = :pid AND user_id = :uid");
+        $update = $pdo->prepare("UPDATE posts SET status = :status WHERE id = :pid AND user_id = :uid AND admin_status = 'approved'");
         $update->execute([
             ':status' => $newStatus,
             ':pid' => $postId,
@@ -42,6 +42,7 @@
         header("Location: my_posts.php?tab=" . urlencode($newStatus === 'hidden' ? 'hidden' : 'public'));
         exit;
     } catch (Throwable $e) {
+        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'An error occurred. Please try again.'];
         header("Location: my_posts.php");
         exit;
     }

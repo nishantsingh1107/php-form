@@ -11,11 +11,11 @@
     $postId = $_GET['id'] ?? 0;
 
     if($postId <= 0){
-        header("Location: my_post.php");
+        header("Location: my_posts.php");
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT title, description, status, created_at from posts WHERE id = :pid AND user_id = :uid");
+    $stmt = $pdo->prepare("SELECT title, description, status, admin_status, created_at from posts WHERE id = :pid AND user_id = :uid");
 
     $stmt->execute([
         ":pid" => $postId,
@@ -52,6 +52,21 @@
         .post-image:hover {
             transform: scale(1.03);
         }
+        
+        .blocked-notice {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .status-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +78,12 @@
             <a href="my_posts.php" class="btn btn-dark btn-sm mb-3">← Back to My Posts</a>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
+                    <?php if ($post['admin_status'] === 'blocked'): ?>
+                        <div class="blocked-notice">
+                            <strong>This post has been blocked by an administrator.</strong> You cannot edit or publish this post until it is unblocked.
+                        </div>
+                    <?php endif; ?>
+
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                             <h3 class="mb-1"><?= htmlspecialchars($post['title']) ?></h3>
@@ -70,10 +91,19 @@
                                 Created on <?= date('d M Y, h:i A', strtotime($post['created_at'])) ?>
                             </small>
                         </div>
-                        <span class="badge fs-6 ms-auto <?= $post['status'] === 'public' ? 'bg-success' : 'bg-primary' ?>">
-                            <?= ucfirst($post['status']) ?>
-                        </span>
-                        <a class="btn btn-outline-primary btn-sm ms-2" href="edit_post.php?id=<?= (int)$postId ?>">Edit Post</a>
+                        <div class="status-badges ms-auto">
+                            <span class="badge fs-6 <?= $post['status'] === 'public' ? 'bg-success' : 'bg-secondary' ?>">
+                                <?= ucfirst($post['status']) ?>
+                            </span>
+                            <span class="badge fs-6 <?= $post['admin_status'] === 'approved' ? 'bg-success' : 'bg-danger' ?>">
+                                Admin: <?= ucfirst($post['admin_status']) ?>
+                            </span>
+                        </div>
+                        <?php if ($post['admin_status'] !== 'blocked'): ?>
+                            <a class="btn btn-primary btn-sm ms-2" href="edit_post.php?id=<?= (int)$postId ?>">Edit Post</a>
+                        <?php else: ?>
+                            <button class="btn btn-primary btn-sm ms-2" disabled>Edit Post</button>
+                        <?php endif; ?>
                     </div><hr>
                     <div class="mb-4">
                         <h6 class="text-uppercase text-muted mb-2">Description</h6>
@@ -93,9 +123,9 @@
                             <div class="row g-3">
                                 <?php foreach ($images as $img): ?>
                                     <div class="col-md-4 col-sm-6">
-                                        <div class="border rounded overflow-hidden">
-                                            <img src="../public/<?= htmlspecialchars($img['file_path']) ?>" class="img-fluid post-image" alt="Post image">
-                                        </div>
+                                        <a href="../public/<?= htmlspecialchars($img['file_path']) ?>" data-fancybox="gallery">
+                                            <img src="../public/<?= htmlspecialchars($img['file_path']) ?>" class="img-fluid rounded w-100" style="height:220px;object-fit:cover;">
+                                        </a>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -109,5 +139,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<script>
+Fancybox.bind('[data-fancybox="gallery"]', {});
+</script>
 </body>
 </html>

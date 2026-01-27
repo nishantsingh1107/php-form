@@ -19,10 +19,17 @@
         exit;
     }
 
-    $stmt=$pdo->prepare("SELECT id,user_id FROM posts WHERE id=:pid LIMIT 1");
+    $stmt=$pdo->prepare("SELECT id, user_id, admin_status FROM posts WHERE id=:pid LIMIT 1");
     $stmt->execute([':pid'=>$postId]);
     $post=$stmt->fetch(PDO::FETCH_ASSOC);
     if(!$post || (int)$post['user_id'] !== $userId){
+        header("Location: my_posts.php");
+        exit;
+    }
+
+    // Prevent deleting blocked posts
+    if ($post['admin_status'] === 'blocked') {
+        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'You cannot delete a blocked post.'];
         header("Location: my_posts.php");
         exit;
     }
@@ -39,10 +46,12 @@
             ':uid'=>$userId
         ]);
         $pdo->commit();
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Post deleted successfully.'];
     }catch(Throwable $e){
         if($pdo->inTransaction()){
             $pdo->rollBack();
         }
+        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Failed to delete post. Please try again.'];
         header("Location: my_posts.php");
         exit;
     }

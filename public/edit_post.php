@@ -15,7 +15,7 @@
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT id, title, description FROM posts WHERE user_id = :uid AND id = :pid");
+    $stmt = $pdo->prepare("SELECT id, title, description, admin_status FROM posts WHERE user_id = :uid AND id = :pid");
     $stmt->execute([
         ":uid" => $userId,
         ":pid" => $postId
@@ -27,6 +27,12 @@
         exit;
     }
 
+    if ($post['admin_status'] === 'blocked') {
+        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'You cannot edit a blocked post.'];
+        header("Location: my_posts.php");
+        exit;
+    }
+
     $stmt = $pdo->prepare("SELECT id, file_path FROM post_images WHERE post_id = :pid ORDER BY position ASC");
     $stmt->execute([":pid" => $postId]);
 
@@ -34,6 +40,9 @@
 
     $errors = $_SESSION['edit_post_errors'] ?? [];
     unset($_SESSION['edit_post_errors']);
+
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
 ?>
 
 <!DOCTYPE html>
@@ -122,6 +131,11 @@
         <?php include "partials/sidebar.php"; ?>
 
         <div class="col-md-10 p-4">
+            <?php if ($flash): ?>
+                <div class="alert alert-<?= htmlspecialchars($flash['type']) ?> mb-3">
+                    <?= htmlspecialchars($flash['message']) ?>
+                </div>
+            <?php endif; ?>
             <a href="view_post.php?id=<?= (int)$postId ?>" class="btn btn-dark btn-sm mb-3">← Back to Post</a>
             <div class="card shadow-sm">
                 <div class="card-body">
