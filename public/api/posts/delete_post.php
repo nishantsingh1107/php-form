@@ -11,10 +11,11 @@
         api_error("Invalid post ID", 400);
     }
 
-    $stmt = $pdo->prepare("SELECT id FROM posts WHERE id = :pid AND user_id = :uid LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id FROM posts WHERE id = :pid AND user_id = :uid AND admin_status = :status LIMIT 1");
     $stmt->execute([
         ':pid' => $postId,
-        ':uid' => $userId
+        ':uid' => $userId,
+        ':status' => 'approved'
     ]);
 
     $post = $stmt->fetch();

@@ -143,7 +143,7 @@
                     <form action="update_post.php" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="post_id" value="<?= (int)$postId ?>">
                         <div class="mb-3">
-                            <label class="form-label">Title *</label>
+                            <label class="form-label">Title<span class="text-danger">*</span></label>
                             <input id="title" type="text" name="title" class="form-control <?= isset($errors['title']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($post['title']) ?>" required minlength="3" maxlength="150">
                             <div class="invalid-feedback" id="titleClientErr"><?= htmlspecialchars($errors['title'] ?? '') ?></div>
                         </div>
@@ -310,7 +310,7 @@
         return setErr(descInput, descClientErr, '');
     }
 
-    if (form) {
+    if(form){
         form.addEventListener('submit', (e) => {
             clearError();
 
