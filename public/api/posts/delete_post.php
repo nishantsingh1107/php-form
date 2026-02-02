@@ -3,57 +3,64 @@
     require_login();
 
     $userId = (int)$_SESSION['user_id'];
+    $input = json_decode(file_get_contents("php://input"), true);
+    $postIds = $input['post_ids'] ?? [];
 
-    $input  = json_decode(file_get_contents("php://input"), true);
-    $postId = (int)($input['post_id'] ?? 0);
-
-    if($postId <= 0){
-        api_error("Invalid post ID", 400);
+    if(!is_array($postIds) || empty($postIds)){
+        api_error("post_ids must be a non-empty array", 400);
     }
 
-    $stmt = $pdo->prepare("SELECT id FROM posts WHERE id = :pid AND user_id = :uid AND admin_status = :status LIMIT 1");
-    $stmt->execute([
-        ':pid' => $postId,
-        ':uid' => $userId,
-        ':status' => 'approved'
-    ]);
+    $postIds = array_values(array_unique(array_map('intval', $postIds)));
+    $postIds = array_filter($postIds, fn($id) => $id > 0);
 
-    $post = $stmt->fetch();
-    if(!$post){
-        api_error("Post not found or access denied", 404);
+    if(empty($postIds)){
+        api_error("Invalid post IDs", 400);
     }
 
-    $imgStmt = $pdo->prepare("SELECT file_path FROM post_images WHERE post_id = :pid");
-    $imgStmt->execute([':pid' => $postId]);
-    $images = $imgStmt->fetchAll(PDO::FETCH_COLUMN);
+    $placeholders = implode(',', array_fill(0, count($postIds), '?'));
 
-    try {
+    $checkStmt = $pdo->prepare("SELECT id FROM posts WHERE id IN ($placeholders) AND user_id = ? AND admin_status = 'approved'");
+    $checkStmt->execute([...$postIds, $userId]);
+    $validPosts = $checkStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    if(count($validPosts) !== count($postIds)){
+        api_error("One or more posts not found or access denied", 403);
+    }
+
+    $imgStmt = $pdo->prepare("SELECT post_id, file_path FROM post_images WHERE post_id IN ($placeholders)");
+    $imgStmt->execute($postIds);
+    $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    try{
         $pdo->beginTransaction();
+        $delStmt = $pdo->prepare("DELETE FROM posts WHERE id IN ($placeholders)");
+        $delStmt->execute($postIds);
 
-        $pdo->prepare("DELETE FROM posts WHERE id = :pid")->execute([':pid' => $postId]);
         $pdo->commit();
 
-        foreach ($images as $path){
-            $fullPath = __DIR__ . '/../../' . $path;
+        foreach($images as $img){
+            $fullPath = __DIR__ . '/../../' . $img['file_path'];
             if (file_exists($fullPath)) {
                 @unlink($fullPath);
             }
         }
 
-        $postDir = __DIR__ . "/../../uploads/posts/{$userId}/{$postId}";
-        if(is_dir($postDir)){
-            @rmdir($postDir);
+        foreach($postIds as $pid){
+            $postDir = __DIR__ . "/../../uploads/posts/{$userId}/{$pid}";
+            if (is_dir($postDir)) {
+                @rmdir($postDir);
+            }
         }
 
         api_success([
-            "message" => "Post deleted successfully"
+            "message" => "Posts deleted successfully",
+            "deleted_count" => count($postIds)
         ]);
 
-    } catch(Throwable $e){
-        if ($pdo->inTransaction()) {
+    }catch(Throwable $e){
+        if($pdo->inTransaction()){
             $pdo->rollBack();
         }
-
-        api_error("Failed to delete post. Please try again.", 500);
+        api_error("Failed to delete posts. Please try again.", 500);
     }
 ?>
