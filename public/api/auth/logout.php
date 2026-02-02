@@ -1,6 +1,6 @@
 <?php
     require __DIR__ . '/../helpers/_bootstrap.php';
-    require_login();
+    $jwtData = require_jwt_auth();
 
     $_SESSION = [];
 

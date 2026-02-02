@@ -1,8 +1,8 @@
 <?php
     require_once __DIR__ . '/../helpers/_bootstrap.php';
-    require_login();
-
-    $userId = (int)$_SESSION['user_id'];
+    $jwtData = require_jwt_auth();
+    $userId = (int)$jwtData['sub'];
+    
     $input = json_decode(file_get_contents("php://input"), true);
     $postIds = $input['post_ids'] ?? [];
 

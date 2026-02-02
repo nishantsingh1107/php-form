@@ -1,15 +1,16 @@
 <?php
     require __DIR__ . '/../helpers/_bootstrap.php';
-    require_login();
+    $jwtData = require_jwt_auth();
 
     $input = json_decode(file_get_contents("php://input"), true);
     $password = $input['password'] ?? '';
-
+    
     if ($password === '') {
         api_error("Password is required", 400);
     }
-
-    $userId = (int)$_SESSION['user_id'];
+        
+    // $userId = (int)$_SESSION['user_id'];
+    $userId = (int)$jwtData['sub'];
 
     $stmt = $pdo->prepare("SELECT password FROM users WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $userId]);

@@ -53,7 +53,7 @@
         api_error("Email not verified. Please verify first.", 403);
     }
 
-    $_SESSION['user_id'] = $userId;
+    // $_SESSION['user_id'] = $userId;
 
     if($mustChangePassword === 1){
         api_success([
@@ -61,9 +61,12 @@
             "action"  => "change_password"
         ]);
     }
+    
+    $token = create_jwt($userId);
 
     api_success([
         "message" => "Login successful",
-        "role"    => $user['role']
+        "role" => $user['role'],
+        "token" => $token
     ]);
 ?>

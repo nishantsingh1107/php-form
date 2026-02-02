@@ -1,8 +1,7 @@
 <?php
     require_once __DIR__ . "/../helpers/_bootstrap.php";
-
-    require_login();
-    $userId = (int)$_SESSION['user_id'];
+    $jwtData = require_jwt_auth();
+    $userId = (int)$jwtData['sub'];
 
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
