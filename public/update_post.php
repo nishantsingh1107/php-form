@@ -49,9 +49,9 @@
 
     $pdo->prepare("UPDATE posts SET title = :title, description = :des WHERE id = :pid AND user_id = :uid")->execute([
         ':title' => $title,
-        ':des'   => $description,
-        ':pid'   => $postId,
-        ':uid'   => $userId
+        ':des' => $description,
+        ':pid' => $postId,
+        ':uid' => $userId
     ]);
 
     if (!empty($_POST['delete_images'])) {
@@ -62,7 +62,7 @@
 
             $stmt->execute([
                 ':imgId' => $imgId,
-                ':pid'   => $postId
+                ':pid' => $postId
             ]);
 
             if ($img = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -85,7 +85,7 @@
     foreach ($imageIds as $imgId) {
         $upd->execute([
             ':pos' => $pos++,
-            ':id'  => $imgId
+            ':id' => $imgId
         ]);
     }
 
@@ -104,14 +104,14 @@
 
             $stmt = $pdo->prepare("SELECT file_path FROM post_images WHERE id = :id AND post_id = :pid");
             $stmt->execute([
-                ':id'  => $imgId,
+                ':id' => $imgId,
                 ':pid' => $postId
             ]);
 
             $img = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$img) continue;
 
-            $tmp  = $_FILES['replace_image']['tmp_name'][$imgId] ?? '';
+            $tmp = $_FILES['replace_image']['tmp_name'][$imgId] ?? '';
             $size = (int)($_FILES['replace_image']['size'][$imgId] ?? 0);
             if ($tmp === '' || !is_file($tmp)) {
                 continue;
@@ -135,7 +135,7 @@
                 ':path' => "uploads/posts/$userId/$postId/$newName",
                 ':mime' => $mime,
                 ':size' => $size,
-                ':id'   => $imgId
+                ':id' => $imgId
             ]);
             @unlink("../public/" . $img['file_path']);
         }
@@ -174,7 +174,7 @@
 
         for ($i = 0; $i < count($files['name']); $i++) {
             if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-            $tmp  = $files['tmp_name'][$i];
+            $tmp = $files['tmp_name'][$i];
             $size = (int)$files['size'][$i];
             $mime = mime_content_type($tmp);
 
@@ -190,11 +190,11 @@
             move_uploaded_file($tmp, $baseDir . $name);
 
             $pdo->prepare("INSERT INTO post_images (post_id, file_path, mime, size_bytes, position) VALUES (:pid, :path, :mime, :size, :pos)")->execute([
-                ':pid'  => $postId,
+                ':pid' => $postId,
                 ':path' => "uploads/posts/$userId/$postId/$name",
                 ':mime' => $mime,
                 ':size' => $size,
-                ':pos'  => $position++
+                ':pos' => $position++
             ]);
         }
     }

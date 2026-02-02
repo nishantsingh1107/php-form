@@ -46,7 +46,7 @@
                         $otpPlain = (string)random_int(100000, 999999);
                         $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
                         $otpToken = bin2hex(random_bytes(32));
-                        $otpTokenStored = 'otp:' . hash('sha256', $otpToken);
+                        $otpTokenStored = hash('sha256', $otpToken);
 
                         $pdo->prepare("UPDATE users SET otp_code=:otp, otp_expires_at=DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), verify_token=:token WHERE id=:id")->execute(['otp'=>$otpHash,'token'=>$otpTokenStored,'id'=>$uid]);
 

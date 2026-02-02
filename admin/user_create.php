@@ -107,9 +107,9 @@
                     "INSERT INTO profile_photos (user_id, file_name, file_path, file_type) VALUES (:uid,:fn,:fp,:ft)"
                 )->execute([
                     ':uid' => $userId,
-                    ':fn'  => basename($dbFilePath),
-                    ':fp'  => $dbFilePath,
-                    ':ft'  => $fileExt
+                    ':fn' => basename($dbFilePath),
+                    ':fp' => $dbFilePath,
+                    ':ft' => $fileExt
                 ]);
             }
 

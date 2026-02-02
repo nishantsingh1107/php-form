@@ -92,7 +92,7 @@
             $otpPlain = (string)random_int(100000,999999);
             $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
             $otpToken = bin2hex(random_bytes(32));
-            $otpTokenStored = 'otp:' . hash('sha256', $otpToken);
+            $otpTokenStored = hash('sha256', $otpToken);
 
             $pdo->prepare("INSERT INTO users(name,email,mobile,password,status,role,email_verified,verify_token,must_change_password,otp_code,otp_expires_at) VALUES(:name,:email,:mobile,:password,'inactive','user',0,:token,0,:otp,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE))")
                 ->execute([
@@ -108,9 +108,9 @@
             if ($userId && !empty($uploadPath)) {
                 $pdo->prepare("INSERT INTO profile_photos (user_id, file_name, file_path, file_type) VALUES (:uid, :fn, :fp, :ft)")->execute([
                     'uid' => $userId,
-                    'fn'  => basename($uploadPath),
-                    'fp'  => $uploadPath,
-                    'ft'  => $fileExt
+                    'fn' => basename($uploadPath),
+                    'fp' => $uploadPath,
+                    'ft' => $fileExt
                 ]);
             }
 

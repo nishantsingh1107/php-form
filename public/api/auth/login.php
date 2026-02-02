@@ -2,7 +2,7 @@
     require_once __DIR__ . '/../helpers/_bootstrap.php';
     $input = json_decode(file_get_contents("php://input"), true);
 
-    $email    = trim($input['email'] ?? '');
+    $email = trim($input['email'] ?? '');
     $password = $input['password'] ?? '';
 
     if($email === '' || $password === ''){
@@ -29,15 +29,15 @@
     $userId = (int)$user['id'];
 
     if($status === 'inactive' && $emailVerified === 0 && $mustChangePassword === 0){
-        $otpPlain  = (string) random_int(100000, 999999);
-        $otpHash   = password_hash($otpPlain, PASSWORD_DEFAULT);
-        $token     = bin2hex(random_bytes(32));
-        $tokenHash = 'otp:' . hash('sha256', $token);
+        $otpPlain = (string) random_int(100000, 999999);
+        $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
 
         $pdo->prepare("UPDATE users SET otp_code = :otp, otp_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), verify_token = :token WHERE id = :id")->execute([
-            ':otp'   => $otpHash,
+            ':otp' => $otpHash,
             ':token' => $tokenHash,
-            ':id'    => $userId
+            ':id' => $userId
         ]);
 
         send_email($user['email'], "Email Verification OTP", "Your OTP is {$otpPlain}. It is valid for 5 minutes.");
@@ -58,7 +58,7 @@
     if($mustChangePassword === 1){
         api_success([
             "message" => "Password change required",
-            "action"  => "change_password"
+            "action" => "change_password"
         ]);
     }
     

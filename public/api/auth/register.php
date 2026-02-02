@@ -25,7 +25,7 @@
     $otpPlain = (string) random_int(100000, 999999);
     $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
     $tokenPlain = bin2hex(random_bytes(32));
-    $tokenStored = 'otp:' . hash('sha256', $tokenPlain);
+    $tokenStored = hash('sha256', $tokenPlain);
 
     $password_hash = password_hash($password, PASSWORD_DEFAULT);
 

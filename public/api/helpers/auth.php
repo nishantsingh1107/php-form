@@ -4,7 +4,7 @@
     //         api_error("Unauthorized", 401);
     //     }
     // }
-    
+
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
@@ -16,7 +16,7 @@
 
         return [
             'secret' => $secret,
-            'issuer' => $_ENV['JWT_ISSUER'] ?? getenv('JWT_ISSUER') ?: 'phpLearning',
+            'issuer' => $_ENV['JWT_ISSUER'] ?? getenv('JWT_ISSUER') ?: 'Organization',
             'ttl' => (int)($_ENV['JWT_TTL_SECONDS'] ?? getenv('JWT_TTL_SECONDS') ?: 3600),
             'algo' => 'HS256'
         ];
@@ -27,10 +27,10 @@
         $now = time();
 
         return JWT::encode([
-            'iss'  => $cfg['issuer'],
-            'iat'  => $now,
-            'exp'  => $now + $cfg['ttl'],
-            'sub'  => $userId,
+            'iss' => $cfg['issuer'],
+            'iat' => $now,
+            'exp' => $now + $cfg['ttl'],
+            'sub' => $userId,
             'role' => $role,
         ], $cfg['secret'], $cfg['algo']);
     }

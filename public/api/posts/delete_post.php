@@ -2,16 +2,16 @@
     require_once __DIR__ . '/../helpers/_bootstrap.php';
     $jwtData = require_jwt_auth();
     $userId = (int)$jwtData['sub'];
-    
-    $input = json_decode(file_get_contents("php://input"), true);
-    $postIds = $input['post_ids'] ?? [];
 
-    if(!is_array($postIds) || empty($postIds)){
-        api_error("post_ids must be a non-empty array", 400);
+    $input = json_decode(file_get_contents("php://input"), true);
+    $postIdsRaw = $input['post_ids'] ?? '';
+
+    if (!is_string($postIdsRaw) || trim($postIdsRaw) === '') {
+        api_error("post_ids must be a comma-separated string", 400);
     }
 
-    $postIds = array_values(array_unique(array_map('intval', $postIds)));
-    $postIds = array_filter($postIds, fn($id) => $id > 0);
+    $postIds = array_map('intval', array_map('trim', explode(',', $postIdsRaw)));
+    $postIds = array_values(array_unique(array_filter($postIds, fn ($id) => $id > 0)));
 
     if(empty($postIds)){
         api_error("Invalid post IDs", 400);

@@ -1,9 +1,9 @@
 <?php
     require_once "../config/db.php";
-    $draw  = intval($_POST['draw']);
-    $start  = intval($_POST['start']);
-    $length  = intval($_POST['length']);
-    $search  = $_POST['search']['value'] ?? "";
+    $draw = intval($_POST['draw']);
+    $start = intval($_POST['start']);
+    $length = intval($_POST['length']);
+    $search = $_POST['search']['value'] ?? "";
 
     $orderColIdx = $_POST['order'][0]['column'];
     $orderDir = strtolower($_POST['order'][0]['dir']) === 'desc' ? 'DESC' : 'ASC';

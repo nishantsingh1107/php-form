@@ -362,7 +362,7 @@
         const file = input.files[0];
         if (!file) return;
         const card = input.closest('.image-card');
-        const img  = card.querySelector('.image-thumb');
+        const img = card.querySelector('.image-thumb');
         const badge = card.querySelector('.image-badge');
 
         const reader = new FileReader();

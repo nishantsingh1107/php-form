@@ -2,7 +2,7 @@
     require __DIR__ . '/../helpers/_bootstrap.php';
     $input = json_decode(file_get_contents("php://input"), true);
 
-    $token    = trim($input['token'] ?? '');
+    $token = trim($input['token'] ?? '');
     $password = $input['password'] ?? '';
 
     if($token === '' || $password === ''){
@@ -28,7 +28,7 @@
 
     $pdo->prepare("UPDATE users SET password = :password, reset_token_hash = NULL, reset_expires_at = NULL WHERE id = :id")->execute([
         ':password' => $newHash,
-        ':id'       => (int)$user['id']
+        ':id' => (int)$user['id']
     ]);
 
     api_success([

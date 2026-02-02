@@ -7,7 +7,7 @@
         exit;
     }
     
-    $userId    = $_SESSION['user_id'];
+    $userId = $_SESSION['user_id'];
     $userName = '';
     $userEmail = '';
     $userMobile = '';

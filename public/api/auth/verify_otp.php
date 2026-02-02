@@ -14,7 +14,7 @@
         api_error("OTP must be a 6-digit number", 400);
     }
 
-    $tokenStored = 'otp:' . hash('sha256', $token);
+    $tokenStored = hash('sha256', $token);
     $stmt = $pdo->prepare("SELECT id, status, email_verified, must_change_password, otp_code, otp_expires_at, (otp_expires_at IS NULL OR otp_expires_at <= UTC_TIMESTAMP()) AS otp_expired FROM users WHERE verify_token = :token LIMIT 1");
     $stmt->execute([":token" => $tokenStored]);
 

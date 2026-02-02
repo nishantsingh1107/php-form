@@ -38,7 +38,7 @@
     }
 
     $allowedMime = ['image/jpeg', 'image/png'];
-    $allowedExt  = ['jpg', 'jpeg', 'png'];
+    $allowedExt = ['jpg', 'jpeg', 'png'];
     $maxSize = 2 * 1024 * 1024;
 
     try {
@@ -67,10 +67,10 @@
                 throw new Exception("Upload error");
             }
 
-            $tmp  = $files['tmp_name'][$i];
+            $tmp = $files['tmp_name'][$i];
             $size = (int)$files['size'][$i];
             $mime = mime_content_type($tmp);
-            $ext  = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
 
             if(!getimagesize($tmp)) {
                 throw new Exception("Invalid image file");
@@ -98,11 +98,11 @@
             $uploadedFiles[] = $destination;
 
             $pdo->prepare("INSERT INTO post_images (post_id, file_path, mime, size_bytes, position) VALUES (:pid, :path, :mime, :size, :pos)")->execute([
-                ':pid'  => $postId,
+                ':pid' => $postId,
                 ':path' => "uploads/posts/$userId/$postId/$fileName",
                 ':mime' => $mime,
                 ':size' => $size,
-                ':pos'  => $position++
+                ':pos' => $position++
             ]);
         }
 

@@ -8,7 +8,7 @@
         exit;
     }
 
-    $tokenStored = 'otp:' . hash('sha256', $token);
+    $tokenStored = hash('sha256', $token);
 
     $userStmt = $pdo->prepare(
         "SELECT id, email, status, email_verified, must_change_password, otp_code, otp_expires_at, verify_token, "

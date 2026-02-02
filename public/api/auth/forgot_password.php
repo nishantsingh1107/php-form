@@ -21,11 +21,11 @@
     }
 
     $tokenPlain = bin2hex(random_bytes(32));
-    $tokenHash  = hash('sha256', $tokenPlain);
+    $tokenHash = hash('sha256', $tokenPlain);
 
     $pdo->prepare("UPDATE users SET reset_token_hash = :token, reset_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 10 MINUTE) WHERE id = :id")->execute([
         ':token' => $tokenHash,
-        ':id'    => (int)$user['id']
+        ':id' => (int)$user['id']
     ]);
 
     $resetLink = "http://localhost/phpLearning/Project/public/api/auth/reset_password.php?token={$tokenPlain}";

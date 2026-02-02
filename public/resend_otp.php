@@ -10,7 +10,7 @@
         exit;
     }
 
-    $tokenStored = 'otp:' . hash('sha256', $token);
+    $tokenStored = hash('sha256', $token);
 
     $stmt = $pdo->prepare("SELECT id, email, status, email_verified, must_change_password FROM users WHERE verify_token=:token LIMIT 1");
     $stmt->execute(['token'=>$tokenStored]);
@@ -25,7 +25,7 @@
     $otpPlain = (string)random_int(100000,999999);
     $otpHash = password_hash($otpPlain, PASSWORD_DEFAULT);
     $newToken = bin2hex(random_bytes(32));
-    $newTokenStored = 'otp:' . hash('sha256', $newToken);
+    $newTokenStored = hash('sha256', $newToken);
 
     $email = (string)$user['email'];
 
