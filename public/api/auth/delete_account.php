@@ -1,6 +1,6 @@
 <?php
     require __DIR__ . '/../helpers/_bootstrap.php';
-    $jwtData = require_jwt_auth();
+    $jwtData = require_access_token();
 
     $input = json_decode(file_get_contents("php://input"), true);
     $password = $input['password'] ?? '';

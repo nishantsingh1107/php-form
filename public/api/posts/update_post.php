@@ -1,6 +1,6 @@
 <?php
     require_once __DIR__ . '/../helpers/_bootstrap.php';
-    $jwtData = require_jwt_auth();
+    $jwtData = require_access_token();
     $userId = (int)$jwtData['sub'];
 
     $postId = (int)($_POST['post_id'] ?? 0);

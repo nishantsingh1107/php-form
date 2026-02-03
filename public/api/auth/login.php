@@ -61,12 +61,12 @@
             "action" => "change_password"
         ]);
     }
-    
-    $token = create_jwt($userId);
 
+    $pdo->prepare("DELETE FROM refresh_tokens WHERE user_id = :uid")->execute([':uid' => $userId]);
     api_success([
         "message" => "Login successful",
         "role" => $user['role'],
-        "token" => $token
+        "access_token"  => create_access_token($userId, $user['role']),
+        "refresh_token" => create_refresh_token($pdo, $userId)
     ]);
 ?>
