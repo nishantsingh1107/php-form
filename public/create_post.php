@@ -1,9 +1,5 @@
 <?php
-    session_start();
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: login_user.php");
-        exit;
-    }
+    require_once __DIR__ . "/partials/token_guard.php";
 
     $postErrors = $_SESSION['post_errors'] ?? [];
     $old = $_SESSION['old_post'] ?? [];

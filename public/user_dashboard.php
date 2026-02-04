@@ -1,11 +1,5 @@
 <?php
-    session_start();
-    require_once "../config/db.php";
-
-    if(!isset($_SESSION['user_id'])){
-        header("Location: login_user.php");
-        exit;
-    }
+    require_once __DIR__ . "/partials/token_guard.php";
 
     $userId = $_SESSION['user_id'];
     $stmt = $pdo->prepare("SELECT COUNT(*) AS total_posts, SUM(status = 'public') AS public_posts, SUM(status = 'hidden') AS hidden_posts, SUM(admin_status = 'blocked') AS blocked_posts FROM posts WHERE user_id = :uid");

@@ -1,9 +1,3 @@
-<?php
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login_user.php");
-    exit;
-}
-?>
 <div class="d-none d-md-block col-md-2"></div>
 
 <aside class="d-none d-md-flex bg-dark text-white p-3 flex-column overflow-auto position-fixed" style="top:56px;left:0;height:calc(100vh - 56px);width:16.666667%; z-index:1020;">

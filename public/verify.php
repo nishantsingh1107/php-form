@@ -1,6 +1,8 @@
 <?php
     session_start();
     require_once "../config/db.php";
+    require_once __DIR__ . '/partials/auth_cookies.php';
+    require_once __DIR__ . '/api/helpers/auth.php';
     
     $token = $_GET['token'] ?? "";
     $verified = false;
@@ -21,6 +23,18 @@
             $userId = $user['id'];
 
             $_SESSION['user_id'] = $userId;
+            $_SESSION['role'] = (string)($user['role'] ?? 'user');
+
+            try {
+                $pdo->prepare("DELETE FROM refresh_tokens WHERE user_id = :uid")->execute([':uid' => (int)$userId]);
+            } catch (Throwable $e) {
+                // ignore
+            }
+
+            $accessToken = create_access_token((int)$userId, (string)($user['role'] ?? 'user'));
+            $refreshToken = create_refresh_token($pdo, (int)$userId);
+            auth_set_cookie('access_token', $accessToken, time() + access_token_ttl());
+            auth_set_cookie('refresh_token', $refreshToken, time() + refresh_token_ttl());
 
             header("Location: change_password.php");
             exit;

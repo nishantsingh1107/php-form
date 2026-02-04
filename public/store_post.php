@@ -1,11 +1,5 @@
 <?php
-    session_start();
-    require_once "../config/db.php";
-
-    if(!isset($_SESSION['user_id'])) {
-        header("Location: login_user.php");
-        exit;
-    }
+    require_once __DIR__ . "/partials/token_guard.php";
 
     $userId = (int)$_SESSION['user_id'];
 

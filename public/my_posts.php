@@ -1,11 +1,5 @@
 <?php
-    session_start();
-    require_once "../config/db.php";
-
-    if(!isset($_SESSION['user_id'])){
-        header("Location: login_user.php");
-        exit;
-    }
+    require_once __DIR__ . "/partials/token_guard.php";
 
     $userId = (int)$_SESSION['user_id'];
     $stmt = $pdo->prepare("SELECT p.id, p.title, p.description, p.status, p.admin_status, p.created_at, MIN(pi.file_path) AS thumbnail FROM posts p LEFT JOIN post_images pi ON pi.post_id = p.id WHERE p.user_id = :uid GROUP BY p.id ORDER BY p.created_at DESC");

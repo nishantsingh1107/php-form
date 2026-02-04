@@ -8,6 +8,12 @@
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
+    if (!function_exists('api_error')) {
+        function api_error(string $message, int $code = 400): never {
+            throw new RuntimeException($message, $code);
+        }
+    }
+
     function access_token_ttl(): int {
         return (int)($_ENV['JWT_ACCESS_TTL'] ?? 900); // 15 min
     }

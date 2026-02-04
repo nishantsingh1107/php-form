@@ -1,11 +1,5 @@
 <?php
-    session_start();
-    require_once "../config/db.php";
-
-    if(!isset($_SESSION['user_id'])){
-        header("Location: login_user.php");
-        exit;
-    }
+    require_once __DIR__ . "/partials/token_guard.php";
 
     $stmt = $pdo->prepare("SELECT password, must_change_password FROM users WHERE id = :id");
     $stmt->execute([":id" => $_SESSION['user_id']]);
