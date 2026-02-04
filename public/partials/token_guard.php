@@ -89,4 +89,3 @@
 
     $_SESSION['user_id'] = (int)$claims['sub'];
     $_SESSION['role'] = (string)($claims['role'] ?? 'user');
-?>
