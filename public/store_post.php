@@ -38,6 +38,20 @@
     try {
         $pdo->beginTransaction();
 
+        $creditStmt = $pdo->prepare("SELECT COALESCE(post_credits, 0) FROM users WHERE id = :uid LIMIT 1 FOR UPDATE");
+        $creditStmt->execute([':uid' => $userId]);
+        $credits = (int)$creditStmt->fetchColumn();
+        if ($credits <= 0) {
+            $pdo->rollBack();
+            $_SESSION['post_errors'] = ['general' => 'You have no post credits left.'];
+            $_SESSION['old_post'] = [
+                'title' => $title,
+                'description' => $description,
+            ];
+            header("Location: create_post.php");
+            exit;
+        }
+
         $stmt = $pdo->prepare("INSERT INTO posts (user_id, title, description) VALUES (:uid, :title, :description)");
         $stmt->execute([
             ':uid' => $userId,
@@ -100,6 +114,12 @@
             ]);
         }
 
+        $updateUser = $pdo->prepare("UPDATE users SET post_count = COALESCE(post_count, 0) + 1, post_credits = post_credits - 1 WHERE id = :uid AND post_credits > 0");
+        $updateUser->execute([':uid' => $userId]);
+        if ($updateUser->rowCount() !== 1) {
+            throw new Exception('Unable to update post credits.');
+        }
+
         $pdo->commit();
         unset($_SESSION['old_post']);
         header("Location: my_posts.php");
@@ -121,4 +141,3 @@
         header("Location: create_post.php");
         exit;
     }
-?>

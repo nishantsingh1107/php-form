@@ -29,14 +29,15 @@
 
     $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-    $stmt = $pdo->prepare("INSERT INTO users (name, email, mobile, password, status, email_verified, otp_code, otp_expires_at, verify_token, must_change_password) VALUES (:name, :email, :mobile, :password, 'inactive', 0, :otp, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), :token, 0)");
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, mobile, password, status, email_verified, otp_code, otp_expires_at, verify_token, must_change_password, post_credits, post_count) VALUES (:name, :email, :mobile, :password, 'inactive', 0, :otp, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE), :token, 0, :credits, 0)");
     $stmt->execute([
         ":name" => $name,
         ":email" => $email,
         ":mobile" => $mobile,
         ":password" => $password_hash,
         ':otp' => $otpHash,
-        ':token' => $tokenStored
+        ':token' => $tokenStored,
+        ':credits' => (int)(defined('DEFAULT_POST_CREDITS') ? DEFAULT_POST_CREDITS : 10)
     ]);
 
     send_email($email, "Email Verification OTP", "Your OTP is {$otpPlain}. It is valid for 5 minutes.");

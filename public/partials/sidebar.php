@@ -8,7 +8,10 @@
         <li class="nav-item mb-2">
             <a href="my_posts.php" class="nav-link text-white">My Posts</a>
         </li>
-        <li class="nav-item mb-3 mt-3">
+        <li class="nav-item mb-2 mt-3">
+            <a href="buy_credits.php" class="btn btn-warning btn-sm w-100">Buy Credits</a>
+        </li>
+        <li class="nav-item mb-3 mt-2">
             <a href="create_post.php" class="btn btn-success btn-sm w-100">+ Create Post</a>
         </li>
         <hr class="text-secondary mt-auto">

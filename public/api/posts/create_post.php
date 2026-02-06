@@ -19,6 +19,17 @@
 
     try{
         $pdo->beginTransaction();
+
+        // Gatekeeper: user can post only if they have credits
+        $creditStmt = $pdo->prepare("SELECT post_credits FROM users WHERE id = :uid LIMIT 1 FOR UPDATE");
+        $creditStmt->execute([':uid' => $userId]);
+        $credits = $creditStmt->fetchColumn();
+        $credits = is_numeric($credits) ? (int)$credits : 0;
+        if ($credits <= 0) {
+            $pdo->rollBack();
+            api_error('You have no post credits left.', 403);
+        }
+
         $stmt = $pdo->prepare("INSERT INTO posts (user_id, title, description) VALUES (:uid, :title, :des)");
         $stmt->execute([
             ":uid" => $userId,
@@ -61,6 +72,14 @@
             ]);
 
             }
+
+        // Atomic counters update
+        $upd = $pdo->prepare("UPDATE users SET post_count = COALESCE(post_count, 0) + 1, post_credits = post_credits - 1 WHERE id = :uid AND post_credits > 0");
+        $upd->execute([':uid' => $userId]);
+        if ($upd->rowCount() !== 1) {
+            throw new Exception('Failed to update credits');
+        }
+
         $pdo->commit();
         
         api_success([

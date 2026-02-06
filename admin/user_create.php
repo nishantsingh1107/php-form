@@ -4,6 +4,7 @@
 
     require_once "../auth/admin_auth.php";
     require_once "../config/db.php";
+    require_once "../config/limits.php";
     require_once "../vendor/autoload.php";
 
     function clean($d){
@@ -91,13 +92,14 @@
         if(!$nameErr&&!$emailErr&&!$mobileErr&&!$passErr&&!$userExist&&empty($imgErrors)){
             $verifyToken=bin2hex(random_bytes(32));
 
-            $stmt=$pdo->prepare("INSERT INTO users(name,email,mobile,password,status,email_verified,verify_token,must_change_password) VALUES(:name,:email,:mobile,:password,'inactive',0,:token,1)");
+            $stmt=$pdo->prepare("INSERT INTO users(name,email,mobile,password,status,email_verified,verify_token,must_change_password,post_credits,post_count) VALUES(:name,:email,:mobile,:password,'inactive',0,:token,1,:credits,0)");
             $stmt->execute([
                 ':name'=>$name,
                 ':email'=>$email,
                 ':mobile'=>$mobile,
                 ':password'=>password_hash($password,PASSWORD_DEFAULT),
-                ':token'=>$verifyToken
+                ':token'=>$verifyToken,
+                ':credits'=>(int)(defined('DEFAULT_POST_CREDITS') ? DEFAULT_POST_CREDITS : 10)
             ]);
 
             $userId = (int)$pdo->lastInsertId();

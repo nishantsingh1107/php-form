@@ -4,6 +4,7 @@
 
     require '../vendor/autoload.php';
     require_once "../config/db.php";
+    require_once "../config/limits.php";
 
     function clean($d){
         return trim($d);
@@ -94,14 +95,15 @@
             $otpToken = bin2hex(random_bytes(32));
             $otpTokenStored = hash('sha256', $otpToken);
 
-            $pdo->prepare("INSERT INTO users(name,email,mobile,password,status,role,email_verified,verify_token,must_change_password,otp_code,otp_expires_at) VALUES(:name,:email,:mobile,:password,'inactive','user',0,:token,0,:otp,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE))")
+            $pdo->prepare("INSERT INTO users(name,email,mobile,password,status,role,email_verified,verify_token,must_change_password,otp_code,otp_expires_at,post_credits,post_count) VALUES(:name,:email,:mobile,:password,'inactive','user',0,:token,0,:otp,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 5 MINUTE),:credits,0)")
                 ->execute([
                     'name'=>$name,
                     'email'=>$email,
                     'mobile'=>$mobile,
                     'password'=>$passwordHash,
                     'token'=>$otpTokenStored,
-                    'otp'=>$otpHash
+                    'otp'=>$otpHash,
+                    'credits'=>(int)(defined('DEFAULT_POST_CREDITS') ? DEFAULT_POST_CREDITS : 10)
                 ]);
             $userId = (int)$pdo->lastInsertId();
 

@@ -1,72 +1,72 @@
 <?php
     session_start();
-    require_once __DIR__ . "/../../config/db.php";
-    require_once __DIR__ . "/../../vendor/autoload.php";
+    require_once __DIR__ . "/../../../config/db.php";
+    require_once __DIR__ . "/../../../vendor/autoload.php";
     require_once __DIR__ . "/../helpers/response.php";
+    require_once __DIR__ . "/../../partials/token_guard.php";
 
     use Stripe\Stripe;
+    use Stripe\Customer;
     use Stripe\PaymentIntent;
 
-    if(!isset($_SESSION['user_id'])){
-        api_error("Unauthorized", 401);
-    }
+    Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY'] ?? getenv('STRIPE_SECRET_KEY'));
+    $userId = $_SESSION['user_id'];
+    $input = json_decode(file_get_contents('php://input'), true);
 
-    $userId = (int)$_SESSION['user_id'];
-
-    $input = json_decode(file_get_contents("php://input"), true);
-    $plans = [
-        'plus' => 39900,
-        'pro' => 99900
+    $packages = [
+        20 => 19900,
+        60 => 39900
     ];
 
-    if(!$plans[$plan]){
-        api_error("Invalid plan selected", 400);
+    $credits = (int)($input['credits'] ?? 0);
+
+    if(!isset($packages[$credits])){
+        api_error("Invalid package", 400);
     }
 
-    $amount = $plans[$plan];
-    $currency = 'inr';
+    $stmt = $pdo->prepare("SELECT email, stripe_customer_id FROM users WHERE id = :uid");
+    $stmt->execute([":uid" => $userId]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare("SELECT plan FROM users WHERE id = :uid");
-    $stmt->execute([':uid' => $userId]);
-    $currPlan = $stmt->fetchColumn();
-
-    if($currPlan === $plan){
-        api_error("You are already on this plan", 400);
+    if(!$user){
+        api_error("User not found", 400);
     }
 
-    if($currPlan === 'pro'){
-        api_error("You already have the highest plan", 400);
-    }
+    $stripeCustId = $user['stripe_customer_id'];
 
-    Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY'] ?? getenv('STRIPE_SECRET_KEY'));  
-    
-    try{
-        $paymentIntent = PaymentIntent::create([
-            'amount' => $amount,
-            'currency' => $currency,
-            'metadata' => [
-                'user_id' => $userId,
-                'plan' => $plan
-            ],
-            'automatic_payment_methods' => [
-                'enabled' => true
-            ]
+    if(!$stripeCustId){
+        $customer = Customer::create([
+            'email' => $user['email'],
+            'metadata' => ['user_id' => $userId]
         ]);
-    }catch(Exception $e){
-        api_error("Unable to create payment Intent", 500);
+
+        $stripeCustId = $customer->id;
+        $stmt = $pdo->prepare("UPDATE users SET stripe_customer_id = :cid WHERE id = :uid");
+        $stmt->execute([
+            ":cid" => $stripeCustId,
+            ":uid" => $userId
+        ]);
     }
 
+    $paymentIntent = PaymentIntent::create([
+        'amount' => $packages[$credits],
+        'currency' => 'inr',
+        'customer' => $stripeCustId,
+        'payment_method_types' => ['card'],
+        'metadata' => [
+            'user_id' => $userId,
+            'credits' => $credits
+        ]
+    ]);
 
-    $stmt = $pdo->prepare("INSERT INTO payments (user_id, plan, amount, currency, payment_status_id, status, created_at) VALUES (:uid, :plan, :amount, :currency, :psId, 'pending', NOW())");
+    $stmt = $pdo->prepare("INSERT INTO payments (user_id, stripe_payment_intent_id, stripe_customer_id, amount, currency, credits, status) VALUES (:uid, :pid, :cid, :amt, 'inr', :credits, 'pending')");
     $stmt->execute([
-        ":uid" => $userId,
-        ":plan" => $plan,
-        ":amount" => $amount,
-        ":currency" => $currency,
-        ":psId" => $paymentIntent->id
+        ':uid' => $userId,
+        ':pid' => $paymentIntent->id,
+        ':cid' => $stripeCustId,
+        ':amt' => $packages[$credits]/100,
+        ':credits' => $credits,
     ]);
 
-    api_success([
-        'client_secret' => $paymentIntent->client_secret
-    ]);
+    api_success(['client_secret' => $paymentIntent->client_secret]);
 ?>
