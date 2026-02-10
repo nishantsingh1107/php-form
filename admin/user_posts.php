@@ -40,25 +40,7 @@
 
 <div class="container-fluid">
     <div class="row min-vh-100">
-        <div class="col-md-2 bg-dark text-white p-3">
-            <h5 class="text-center mb-4">Admin Panel</h5>
-            <hr class="text-secondary">
-
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2">
-                    <a href="admin_dashboard.php" class="nav-link text-white">Dashboard</a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a href="admin_profile.php" class="nav-link text-white">Manage Profile</a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a href="show_users.php" class="nav-link text-white">Manage Users</a>
-                </li>
-                <li class="nav-item mt-4">
-                    <a href="../public/logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
-                </li>
-            </ul>
-        </div>
+        <?php require __DIR__ . '/partials/sidebar.php'; ?>
 
         <div class="col-md-10 p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">

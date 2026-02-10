@@ -20,6 +20,16 @@
             line-height: 64px;
             margin: 0 auto;
         }
+        .failed-checkmark {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #bd262e;
+            color: white;
+            font-size: 36px;
+            line-height: 64px;
+            margin: 0 auto;
+        }
 
         .brand-preview {
             width: 240px;
@@ -149,10 +159,28 @@
                     <div class="mb-3">
                         <div class="success-checkmark">✓</div>
                     </div>
-                    <h5 class="text-success">Payment successful</h5>
-                    <span class="badge border border-success text-success mt-2">
-                        Redirecting to dashboard in <span id="redirect-timer">5</span> seconds…
-                    </span>
+                    <div class="alert alert-success text-center text-success">
+                        <h5>Payment successful</h5>
+                        <span class="mt-2">
+                            Redirecting to dashboard in <span id="redirect-timer">5</span> seconds…
+                        </span>
+                    </div>
+                </div>
+                <div id="paymentPending" class="text-center d-none">
+                    <div class="mb-3">
+                        <div class="success-checkmark">…</div>
+                    </div>
+                    <div class="alert alert-warning text-center text-warning">
+                        <h6>Payment is processing. We will update your credits shortly.</h6>
+                    </div>
+                </div>
+                <div id="paymentError" class="text-center d-none">
+                    <div class="mb-3">
+                        <div class="failed-checkmark">Ｘ</div>
+                    </div>
+                    <div class="alert alert-danger text-center text-danger">
+                        <h6>Payment Failed due to: <span id="failed-msg"></span> Please retry</h6>
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,6 +193,7 @@
     const stripe = Stripe("<?= $_ENV['STRIPE_PUBLISH_KEY'] ?>");
     const elements = stripe.elements();
     let selectedCredits = 0;
+    let selectedAmount = 0;
     const brandLogos = {
         demo: 'assets/demo.svg',
         visa: 'assets/visa.svg',
@@ -214,11 +243,15 @@
 
     function buyCredits(credits) {
         selectedCredits = credits;
-        const amount = credits === 20 ? 199 : 399;
-        document.getElementById("payAmount").innerText = amount;
-        document.getElementById("payBtnAmount").innerText = amount;
+        selectedAmount = credits === 20 ? 199 : 399;
+        document.getElementById("payAmount").innerText = selectedAmount;
+        document.getElementById("payBtnAmount").innerText = selectedAmount;
         setBrandPreview('demo');
         document.getElementById('card-error').textContent = '';
+        document.getElementById("paymentSuccess").classList.add("d-none");
+        document.getElementById("paymentPending").classList.add("d-none");
+        document.getElementById("paymentError").classList.add("d-none");
+        document.getElementById("payment-form").classList.remove("d-none");
         modal.show();
     }
 
@@ -233,13 +266,15 @@
         }else{
             btn.disabled = false;
             spinner.classList.add("d-none");
-            text.innerHTML = `Pay ₹<span id="payBtnAmount">${document.getElementById("payBtnAmount").innerText}</span>`;
+            text.innerHTML = `Pay ₹<span id="payBtnAmount">${selectedAmount}</span>`;
         }
     }
 
     function showPaymentSuccess(){
         document.getElementById("payment-form").classList.add("d-none");
         document.getElementById("paymentSuccess").classList.remove("d-none");
+        document.getElementById("paymentPending").classList.add("d-none");
+        document.getElementById("paymentError").classList.add("d-none");
         
         let seconds = 5;
         const timerEl = document.getElementById("redirect-timer");
@@ -254,6 +289,22 @@
                 window.location.href = 'user_dashboard.php';
             }
         }, 1000);
+    }
+
+    function showPaymentPending(){
+        document.getElementById("payment-form").classList.add("d-none");
+        document.getElementById("paymentSuccess").classList.add("d-none");
+        document.getElementById("paymentError").classList.add("d-none");
+        document.getElementById("paymentPending").classList.remove("d-none");
+    }
+
+    function showPaymentError(message){
+        document.getElementById("payment-form").classList.add("d-none");
+        document.getElementById("paymentSuccess").classList.add("d-none");
+        document.getElementById("paymentPending").classList.add("d-none");
+        const msgEl = document.getElementById("failed-msg");
+        msgEl.textContent = message;
+        document.getElementById("paymentError").classList.remove("d-none");
     }
 
     cardNumber.on('change', function (event) {
@@ -285,14 +336,27 @@
                 { payment_method: { card: cardNumber } }
             );
 
-            if (result.error) throw new Error(result.error.message);
+            if (result.error){
+                throw new Error(result.error.message || "Payment Failed");
+            }
+            
+            const status = result.paymentIntent?.status;
+            if (status === "processing") {
+                showPaymentPending();
+                setPayLoading(false);
+                return;
+            }
+
+            if (status !== "succeeded") {
+                throw new Error("Payment not completed. Please try again.");
+            }
 
             showPaymentSuccess();
             setPayLoading(false);
 
         } catch (err) {
             setPayLoading(false);
-            alert(err.message);
+            showPaymentError(err.message);
         }
     });
 </script>

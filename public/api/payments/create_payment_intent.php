@@ -64,7 +64,7 @@
         ':uid' => $userId,
         ':pid' => $paymentIntent->id,
         ':cid' => $stripeCustId,
-        ':amt' => $packages[$credits]/100,
+        ':amt' => (int)($packages[$credits]/100),
         ':credits' => $credits,
     ]);
 

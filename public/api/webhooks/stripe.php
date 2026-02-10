@@ -46,5 +46,35 @@
         }
     }
 
+    if($event->type === 'payment_intent.payment_failed'){
+        $intent = $event->data->object;
+        $piId = $intent->id;
+        try{
+            $pdo->beginTransaction();
+            $stmt = $pdo->prepare("UPDATE payments SET status = 'failed' WHERE stripe_payment_intent_id = :pi AND status = 'pending'");
+            $stmt->execute([':pi' => $piId]);
+            $pdo->commit();
+        }
+        catch(Exception $e){
+            $pdo->rollBack();
+            http_response_code(500);
+            exit;
+        }
+    }
+
+    if ($event->type === 'payment_intent.processing') {
+        $intent = $event->data->object;
+        $piId = $intent->id;
+        $stmt = $pdo->prepare("UPDATE payments SET status = 'pending' WHERE stripe_payment_intent_id = :pi AND status NOT IN ('succeeded', 'failed')");
+        $stmt->execute([':pi' => $piId]);
+    }
+
+    if ($event->type === 'payment_intent.canceled') {
+        $intent = $event->data->object;
+        $piId = $intent->id;
+        $stmt = $pdo->prepare("UPDATE payments SET status = 'failed' WHERE stripe_payment_intent_id = :pi");
+        $stmt->execute([':pi' => $piId]);
+    }
+
     http_response_code(200);
 ?>
